@@ -1,28 +1,12 @@
-#include <SFML/Graphics.hpp>
-
 #include "Aria.h"
 #include "follow.h"
 #include "avoid.h"
 #include "mapping.h"
-#include "map.h"
 #include "wander.h"
 
 
 int main(int argc, char **argv)
 {
-	//sf::RenderWindow window(sf::VideoMode(640, 480), "Robots - P16203335");
-	//while (window.isOpen())
-	//{
-	//	sf::Event event;
-	//	while (window.pollEvent(event))
-	//	{
-	//		switch (event.type)
-	//		{
-	//			case(sf::Event::Closed):{
-	//				window.close();
-	//			}break;
-	//		} 
-	//	}
 
 		Aria::init();
 		ArArgumentParser argParser(&argc, argv);
@@ -82,17 +66,15 @@ int main(int argc, char **argv)
 		follow follow;
 		avoid avoid;
 		mapping mapping;
-		Map map;
 		wander wander;
 		//map.getWindow(&window);
 
 		//robot.addAction(&mapping, 100);
-		robot.addAction(&avoid, 80);
-		robot.addAction(&follow, 60);
-		robot.addAction(&wander, 10);
-		robot.waitForRunExit();
-	//}
+		robot.addAction(&avoid, 60);
+		robot.addAction(&follow, 100);
+		robot.addAction(&wander, 40);
 	// wait for robot task loop to end before exiting the program
+		robot.waitForRunExit();
 	
 
 	Aria::exit(0);

@@ -9,7 +9,7 @@ follow::follow() : ArAction("Follow line") {}
 ArActionDesired * follow::fire(ArActionDesired d)
 {
 	desiredState.reset(); // Reset the desired state (must be done)
-	deltaHeading = 0;
+	deltaHead = 0;
 	unsigned int cycleTime = myRobot->getCycleTime();	//The time in ms between each cycle
 	//Sonar array for both left and right
 	Sonar leftSonars[4], rightSonars[4];
@@ -34,12 +34,13 @@ ArActionDesired * follow::fire(ArActionDesired d)
 	double closestRight = smaller(smaller(rightSonars[0].range, rightSonars[1].range), smaller(rightSonars[2].range, rightSonars[3].range));
 
 	// Collision avoidance
-	frontSonar = myRobot->getClosestSonarRange(-20, 20);	//Gets the closest sonar between -20 and 20 (the front)
-	double followProp = frontSonar > 750 ? 1.0 : frontSonar / 750;
+	front = myRobot->getClosestSonarRange(-20, 20);	//Gets the closest sonar between -20 and 20 (the front)
+	speed = front > 800 ? baseSpeed : (unsigned int)(bigger((front / 800), 0.25) * baseSpeed);
+	double followProp = front > 800 ? 1.0 : front / 800;
 
-	bool followingRight = closestLeft > closestRight;	//Check if we're following on the right or left
+	bool followRight = closestLeft > closestRight;	//Check if we're following on the right or left
 
-	double closest = followingRight ? smaller(smaller(rightSonars[0].range, rightSonars[1].range), rightSonars[2].range) : smaller(smaller(leftSonars[0].range, leftSonars[1].range), leftSonars[2].range);
+	double closest = followRight ? smaller(smaller(rightSonars[0].range, rightSonars[1].range), rightSonars[2].range) : smaller(smaller(leftSonars[0].range, leftSonars[1].range), leftSonars[2].range);
 
 	if (closest > snapOffset)
 	{	//If the closest is further than the line follow limit, stop following
@@ -48,73 +49,82 @@ ArActionDesired * follow::fire(ArActionDesired d)
 
 		return &desiredState; // give the desired state to the robot for actioning
 	}
-	double angle;
+	double ang;
 	bool active;
 
 	// Parallel Beam Component
-	double midSonarDelta = followingRight ? rightSonars[2].range - rightSonars[1].range : leftSonars[2].range - leftSonars[1].range;
-	angle = (atan2(225.0, midSonarDelta) * 180.0 / M_PI) - 90.0;
-	if (followingRight)
+	//Get the difference between the two parallel sensors
+	double midSonarDelta = followRight ? rightSonars[2].range - rightSonars[1].range : leftSonars[2].range - leftSonars[1].range;
+	ang = (atan2(225.0, midSonarDelta) * 180.0 / M_PI) - 90.0;
+	if (followRight)
 	{ 
-		angle *= -1.0;
+		ang *= -1.0;	//Inverse the ang if we're following right
 	}
 	
-	active = std::abs(angle) < 50.0;
-	deltaHeading += m_parallelComp.update(cycleTime, active, angle);
+	active = std::abs(ang) < 50.0;	//If the ang is less than 50 set to active
+	deltaHead += parallel.update(cycleTime, active, ang);	//Update the deltaHead with the new values
 
 	double cosForty = cos(40 * M_PI / 180); // Cosine of forty degrees.
 	double sinForty = sin(40 * M_PI / 180); // Sine of forty degrees.
 
 	// Wide Beam Component
-	if (followingRight)
+	if (followRight)
 	{
+		//Mutiply the top and bottom sonar ranges by cos(40) and sin(40) in radians
 		double topX = cosForty * rightSonars[0].range;
 		double topY = sinForty * rightSonars[0].range;
 		double botX = cosForty * rightSonars[3].range;
 		double botY = sinForty * rightSonars[3].range;
-		
-		angle = ((atan2((topY + botY + 225.0), (botX - topX)) * 180.0 / M_PI) - 90.0) * -1.0;
+		//Total for y and get the difference for x
+		double y = topY + botY + 225.0;
+		double x = botX - topX;
+		//Find the ang
+		ang = ((atan2(y, x) * 180.0 / M_PI) - 90.0) * -1.0;
 	}
 	else
-	{
+	{	//Repeat above but for left hand sonars
 		double topX = cosForty * leftSonars[0].range;
 		double topY = sinForty * leftSonars[0].range;
 		double botX = cosForty * leftSonars[3].range;
 		double botY = sinForty * leftSonars[3].range;
-		
-		angle = (atan2((topY + botY + 225.0), (botX - topX)) * 180.0 / M_PI) - 90.0;
+		double y = topY + botY + 225.0;
+		double x = botX - topX;
+
+		ang = ((atan2(y, x) * 180.0 / M_PI) - 90.0);
 	}
 
-	active = std::abs(angle) < 50.0;
-	deltaHeading += m_wideComp.update(cycleTime, active, angle);
+	active = std::abs(ang) < 50.0;
+	deltaHead += wide.update(cycleTime, active, ang);	//Update deltaHead
 
 	// Offset Component
-	double err = bigger(desiredOffset - closest, -desiredOffset);
-	angle = err * 0.002 * 50;
-	if (!followingRight)
+	//Get the biggest value between the delta of the desired offset and the closest range, and the inverse of the offset
+	double i = bigger(goalOffset - closest, -goalOffset);
+	//Find the new ang
+	ang = i * 0.002 * 50;
+	if (!followRight)
 	{ 
-		angle *= -1.0;
+		ang *= -1.0;
 	}
 
-	deltaHeading += m_offsetComp.update(cycleTime, true, angle);
+	deltaHead += offset.update(cycleTime, true, ang);	//Update the deltaHead
 	
-	double turningSpeedFactor = (10.0 - (smaller(std::abs(deltaHeading), 10.0) * 0.5)) * 0.1;
+	double turnSpeed = (10.0 - (smaller(std::abs(deltaHead), 10.0) * 0.5)) * 0.1;
 
-	double avoidHeading = (1 - followProp) * 50;
-	if (!followingRight) 
+	double avoidHead = (1 - followProp) * 50;
+	if (!followRight) 
 	{
-		avoidHeading *= -1.0;
+		avoidHead *= -1.0;
 	}
 
-	deltaHeading = avoidHeading + (followProp * deltaHeading);
+	deltaHead = avoidHead + (followProp * deltaHead);
 
-	if (followProp > turningSpeedFactor) 
+	if (followProp > turnSpeed) 
 	{ 
-		speed = (unsigned int)(baseSpeed * turningSpeedFactor);
+		speed = (unsigned int)(baseSpeed * turnSpeed);
 	}
 	
 	desiredState.setVel(speed); // set the speed of the robot in the desired state
-	desiredState.setDeltaHeading(deltaHeading); // Set the heading change of the robot
+	desiredState.setDeltaHeading(deltaHead); // Set the heading change of the robot
 
 	return &desiredState; // give the desired state to the robot for actioning
 }

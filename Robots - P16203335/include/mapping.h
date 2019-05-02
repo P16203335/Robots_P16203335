@@ -1,7 +1,6 @@
-//#include <SFML/Graphics.hpp>
+#include <SFML/Graphics.hpp>
 
 #include <ctime>
-#include "map.h"
 #include "sonar.h"
 
 class mapping : public ArAction
@@ -13,4 +12,7 @@ public:
 	ArActionDesired desiredState; // Holds state of the robot that we wish to action
 private:
 	std::vector<Sonar> sonars;
+	std::vector <sf::CircleShape> circles;
+	sf::RenderWindow window;
+	sf::RectangleShape robot;
 };

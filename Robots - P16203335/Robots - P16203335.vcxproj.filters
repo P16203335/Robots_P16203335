@@ -30,9 +30,6 @@
     <ClCompile Include="src\wander.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\map.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\follow.h">
@@ -45,9 +42,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\mapping.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\map.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\wander.h">

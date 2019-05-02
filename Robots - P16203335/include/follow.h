@@ -3,49 +3,46 @@
 #include <iostream>
 #include <string>
 
-// Signatures
+// Component for each part of follow
 class FollowComponent {
 public:
-	std::string m_name;
-	double m_weight;
+	std::string name;
+	double weight;
 	 
-	std::deque<double> m_errors; // Error over time.
-	double pGain; // Gain
-	double iGain; // Gain
-	double dGain; // Gain
+	std::deque<double> errors; // Error over time.
+
+	double p; // Gain
+	double i; // Gain
+	double d; // Gain
 
 	double update(unsigned int cycleTime, bool active, double error = 0.0) {
-		if (!active) { error = 0.0; }
+		if (!active) 
+		{ 
+			error = 0.0; 
+		}
 
 		// Cycle error buffer.
-		m_errors.push_front(error);
-		m_errors.pop_back();
-
-		//std::cout << m_name << ":" << std::endl;
-
+		errors.push_front(error);
+		errors.pop_back();
+		
 		// Proportional
-		double proportional = pGain * error;
-		//std::cout << "Proportional: " << proportional << std::endl; 
+		double proportional = p * error;
 
 		// Integral
 		double integral = 0.0;
-		for (int i = 0; i < 10; i++) { integral += m_errors[i]; }
-		integral *= (10 * cycleTime) * iGain;
-		//std::cout << "Integral: " << integral << std::endl;
+		for (int i = 0; i < 10; i++) { integral += errors[i]; }
+		integral *= (10 * cycleTime) * i;
 
 		// Derivative
-		double derivative = ((error - m_errors[1]) / cycleTime) * dGain;
-		//std::cout << "Derivative: " << derivative << std::endl;
+		double derivative = ((error - errors[1]) / cycleTime) * d;
 
-		double output = (proportional + integral + derivative) * m_weight;
-		/*std::cout << "Output: " << output << std::endl << std::endl;
-		std::cout << m_name << " Output: " << output << std::endl;*/
+		double output = (proportional + integral + derivative) * weight;
 
 		return output;
 	}
 
-	FollowComponent(std::string name, double pGain, double iGain, double dGain, double weight = 1.0) : m_name(name), pGain(pGain), iGain(iGain), dGain(dGain), m_weight(weight) {
-		m_errors = {
+	FollowComponent(std::string name, double p, double i, double d, double weight = 1.0) : name(name), p(p), i(i), d(d), weight(weight) {
+		errors = {
 			0.0, 0.0,
 			0.0, 0.0,
 			0.0, 0.0,
@@ -64,11 +61,9 @@ public:
 	ArActionDesired desiredState; // Holds state of the robot that we wish to action
 protected:
 	int baseSpeed = 200, speed = 150; // Speed in mm/s
-	double deltaHeading = 0; // Change in heading
+	double deltaHead = 0; // Change in heading
 	// Reading
-	double lTopSonar, lTMidSonar, lBMidSonar, lBotSonar;
-	double rTopSonar, rTMidSonar, rBMidSonar, rBotSonar;
-	double frontSonar;
+	double front;
 
 	double smaller(double a, double b)
 	{
@@ -77,6 +72,7 @@ protected:
 		else
 			return b;
 	}
+
 	double bigger(double a, double b)
 	{
 		if (a > b)
@@ -87,10 +83,10 @@ protected:
 
 	// Control variables
 	double snapOffset = 2000;
-	double desiredOffset = 500;
+	double goalOffset = 500;
 
 	// output calculation components
-	FollowComponent m_offsetComp = FollowComponent("Offset Component", 0.5, 0.0001, 100.0, 0.3);
-	FollowComponent m_parallelComp = FollowComponent("Parallel Component", 0.5, 0.0001, 100.0, 0.35);
-	FollowComponent m_wideComp = FollowComponent("Widebeam Component", 0.5, 0.0001, 100.0, 0.35);
+	FollowComponent offset = FollowComponent("Offset", 0.5, 0.0001, 100.0, 0.3);
+	FollowComponent parallel = FollowComponent("Parallel", 0.5, 0.0001, 100.0, 0.35);
+	FollowComponent wide = FollowComponent("Widebeam", 0.5, 0.0001, 100.0, 0.35);
 };
