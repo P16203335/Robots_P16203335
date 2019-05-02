@@ -7,4 +7,5 @@ public:
 	int number;
 	int dir;
 	double range;
+	bool distant = false;
 };

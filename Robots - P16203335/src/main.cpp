@@ -6,7 +6,6 @@
 #include "mapping.h"
 #include "map.h"
 #include "wander.h"
-#include "pathing.h"
 
 
 int main(int argc, char **argv)
@@ -85,7 +84,6 @@ int main(int argc, char **argv)
 		mapping mapping;
 		Map map;
 		wander wander;
-		pathing pathing;
 		//map.getWindow(&window);
 
 		//robot.addAction(&mapping, 100);

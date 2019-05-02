@@ -24,7 +24,6 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\map.cpp" />
     <ClCompile Include="src\mapping.cpp" />
-    <ClCompile Include="src\pathing.cpp" />
     <ClCompile Include="src\wander.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -32,7 +31,6 @@
     <ClInclude Include="include\follow.h" />
     <ClInclude Include="include\map.h" />
     <ClInclude Include="include\mapping.h" />
-    <ClInclude Include="include\pathing.h" />
     <ClInclude Include="include\sonar.h" />
     <ClInclude Include="include\wander.h" />
   </ItemGroup>

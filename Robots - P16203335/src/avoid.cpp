@@ -41,19 +41,39 @@ ArActionDesired * avoid::fire(ArActionDesired d)
 			sonar.number = i;
 			sonars.push_back(sonar);					//Add it to the vector
 		}
+		else if ((myRobot->getSonarRange(i) <= longThreshold) && ((i >= 3) && (i < 4)))
+		{
+			Sonar sonar;
+			sonar.distant = true;
+			sonars.push_back(sonar);
+		}
 	}
 	if (sonars.size() != 0)		//If there are any sonars to be checked (Only if there are some in range of the threshold)
 	{
-		std::sort(sonars.begin(), sonars.end(), sonarRangeSort);	//Sort by their ranges
-		DIRECTION = prioritise(sonars);								//Function to find best action
-
-		switch (DIRECTION)
+		if (sonars.front().distant)
 		{
+			std::cout << "Slowing.\n";
+			double percent = (sonars.front().range / longThreshold);
+			double newSpeed;
+			percent >= 0.4 ? newSpeed = (speed * percent) : newSpeed = (speed*0.4);		
+			adjust(newSpeed, 0);
+			return &desiredState;
+		}
+		else
+		{
+			std::sort(sonars.begin(), sonars.end(), sonarRangeSort);	//Sort by their ranges
+			DIRECTION = prioritise(sonars);								//Function to find best action
+
+			switch (DIRECTION)
+			{
+			case(UP): {
+
+			}
 			case(UP_LEFT): {
 				if (((clock() - upLeftCD) / (double)CLOCKS_PER_SEC) > 3)
 				{
 					std::cout << "Reversing to the left.\n";	//Reverse to the left
-					adjust(-speed, -90);
+					adjust(-speed, 110);
 					upLeftCD = clock();
 				}
 			}break;
@@ -62,7 +82,7 @@ ArActionDesired * avoid::fire(ArActionDesired d)
 				if (((clock() - upRightCD) / (double)CLOCKS_PER_SEC) > 3)
 				{
 					std::cout << "Reversing to the right.\n";	//Reverse to the right
-					adjust(-speed, 90);
+					adjust(-speed, -110);
 					upRightCD = clock();
 				}
 			}break;
@@ -70,7 +90,7 @@ ArActionDesired * avoid::fire(ArActionDesired d)
 				if (((clock() - leftCD) / (double)CLOCKS_PER_SEC) > 3)
 				{
 					std::cout << "Slight adjust against the left.\n";
-					adjust(-speed * 0.25, -30);
+					adjust(-speed * 0.25, 50);
 					leftCD = clock();
 				}
 			}break;
@@ -78,15 +98,16 @@ ArActionDesired * avoid::fire(ArActionDesired d)
 				if (((clock() - rightCD) / (double)CLOCKS_PER_SEC) > 3)
 				{
 					std::cout << "Slight adjust against the right.\n";
-					adjust(-speed * 0.25, 30);
+					adjust(-speed * 0.25, -50);
 					rightCD = clock();
 				}
 			}break;
 			case(OTHER): {}break;
 			default: {std::cerr << "ERROR: Invalid state for avoid\n"; }
+			}
+			return &desiredState;
 		}
-		return &desiredState;
-	}
+	}	
 	else
 	{
 		return &desiredState;
@@ -100,21 +121,28 @@ int avoid::prioritise(std::vector<Sonar> sonars)
 	bool up = false;
 	for (Sonar sonar : sonars)
 	{
-		if (sonar.dir == UP)
+		if (sonar.distant)
 		{
-			up = true;
-		}
-		if (up)
-		{
-			if (sonar.dir == LEFT)
-				return UP_LEFT;
-			if (sonar.dir == RIGHT)
-				return UP_RIGHT;
+			return UP;
 		}
 		else
 		{
-			if ((sonar.dir == LEFT) || (sonar.dir == RIGHT))
-				return sonar.dir;
+			if (sonar.dir == UP)
+			{
+				up = true;
+			}
+			if (up)
+			{
+				if (sonar.dir == LEFT)
+					return UP_LEFT;
+				if (sonar.dir == RIGHT)
+					return UP_RIGHT;
+			}
+			else
+			{
+				if ((sonar.dir == LEFT) || (sonar.dir == RIGHT))
+					return sonar.dir;
+			}
 		}
 	}
 	return prio;

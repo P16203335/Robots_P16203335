@@ -10,9 +10,9 @@ public:
 	double m_weight;
 	 
 	std::deque<double> m_errors; // Error over time.
-	double m_pGain; // Gain
-	double m_iGain; // Gain
-	double m_dGain; // Gain
+	double pGain; // Gain
+	double iGain; // Gain
+	double dGain; // Gain
 
 	double update(unsigned int cycleTime, bool active, double error = 0.0) {
 		if (!active) { error = 0.0; }
@@ -21,21 +21,21 @@ public:
 		m_errors.push_front(error);
 		m_errors.pop_back();
 
-		/*std::cout << m_name << ":" << std::endl;*/
+		//std::cout << m_name << ":" << std::endl;
 
 		// Proportional
-		double proportional = m_pGain * error;
-		/*std::cout << "Proportional: " << proportional << std::endl; */
+		double proportional = pGain * error;
+		//std::cout << "Proportional: " << proportional << std::endl; 
 
 		// Integral
 		double integral = 0.0;
 		for (int i = 0; i < 10; i++) { integral += m_errors[i]; }
-		integral *= (10 * cycleTime) * m_iGain;
-		/*std::cout << "Integral: " << integral << std::endl;*/
+		integral *= (10 * cycleTime) * iGain;
+		//std::cout << "Integral: " << integral << std::endl;
 
 		// Derivative
-		double derivative = ((error - m_errors[1]) / cycleTime) * m_dGain;
-		/*std::cout << "Derivative: " << derivative << std::endl;*/
+		double derivative = ((error - m_errors[1]) / cycleTime) * dGain;
+		//std::cout << "Derivative: " << derivative << std::endl;
 
 		double output = (proportional + integral + derivative) * m_weight;
 		/*std::cout << "Output: " << output << std::endl << std::endl;
@@ -44,7 +44,7 @@ public:
 		return output;
 	}
 
-	FollowComponent(std::string name, double pGain, double iGain, double dGain, double weight = 1.0) : m_name(name), m_pGain(pGain), m_iGain(iGain), m_dGain(dGain), m_weight(weight) {
+	FollowComponent(std::string name, double pGain, double iGain, double dGain, double weight = 1.0) : m_name(name), pGain(pGain), iGain(iGain), dGain(dGain), m_weight(weight) {
 		m_errors = {
 			0.0, 0.0,
 			0.0, 0.0,

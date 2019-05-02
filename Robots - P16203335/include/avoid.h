@@ -27,6 +27,7 @@ private:
 	int baseSpeed = 200, speed = 150; // Speed in mm/s
 	int DIRECTION;
 	int threshold = 300;
+	int longThreshold = 600;
 	int count;
 	std::vector<Sonar> sonars;
 	int prioritise(std::vector<Sonar> sonars);
