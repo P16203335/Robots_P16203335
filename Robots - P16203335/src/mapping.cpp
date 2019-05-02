@@ -40,11 +40,19 @@ ArActionDesired * mapping::fire(ArActionDesired d)
 	window.setView(view);
 	window.clear();
 	window.draw(robot);
+	int count;
 	for (int i = 0; i < circles.size(); i++)
 	{
 		window.draw(circles.at(i));
 	}
+	count++;
+
 	window.setActive(true);
 	window.display();
+	if (count > 4)
+	{
+		circles.clear();
+		count = 0;
+	}
 	return &desiredState;
 }

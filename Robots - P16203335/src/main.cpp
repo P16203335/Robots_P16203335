@@ -69,10 +69,10 @@ int main(int argc, char **argv)
 		wander wander;
 		//map.getWindow(&window);
 
-		//robot.addAction(&mapping, 100);
-		robot.addAction(&avoid, 60);
+		robot.addAction(&mapping, 100);
+		//robot.addAction(&avoid, 60);
 		robot.addAction(&follow, 100);
-		robot.addAction(&wander, 40);
+		//robot.addAction(&wander, 40);
 	// wait for robot task loop to end before exiting the program
 		robot.waitForRunExit();
 	
