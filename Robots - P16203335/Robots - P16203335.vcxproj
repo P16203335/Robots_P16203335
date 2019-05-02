@@ -18,6 +18,18 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\avoid.cpp" />
+    <ClCompile Include="src\follow.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\mapping.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\avoid.h" />
+    <ClInclude Include="include\follow.h" />
+    <ClInclude Include="include\mapping.h" />
+    <ClInclude Include="include\sonar.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{2D177317-35C6-45E5-9BD9-9E66238A1D41}</ProjectGuid>
@@ -69,14 +81,31 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(SolutionDir)/Robots - P16203335/include;C:\Program Files\MobileRobots\Aria\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:/Program Files/MobileRobots/Aria/lib64;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SolutionDir)/Robots - P16203335/src;C:/Program Files/MobileRobots/Aria;$(SourcePath)</SourcePath>
+    <ExecutablePath>C:/Program Files/MobileRobots/Aria/bin64;$(ExecutablePath)</ExecutablePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ExecutablePath>C:/Program Files/MobileRobots/Aria/bin64;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>C:/Program Files/MobileRobots/Aria/include;$(SolutionDir)/Robots - P16203335/include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:/Program Files/MobileRobots/Aria/lib64;C:/Program Files/MobileRobots/Aria/bin64;$(SolutionDir)/Robots - P16203335/lib;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SolutionDir)/Robots - P16203335/src;$(SourcePath)</SourcePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\Program Files\MobileRobots\Aria\lib64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>AriaDebugVC14.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -85,6 +114,10 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>AriaDebugVC14.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;sfml-main-d.lib;sfml-window-d.lib;sfml-graphics-d.lib;sfml-system-d.lib;sfml-audio-d.lib;sfml-network-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Robots - P16203335/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -114,8 +147,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
