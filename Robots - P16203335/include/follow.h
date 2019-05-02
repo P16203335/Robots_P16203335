@@ -70,6 +70,21 @@ protected:
 	double rTopSonar, rTMidSonar, rBMidSonar, rBotSonar;
 	double frontSonar;
 
+	double smaller(double a, double b)
+	{
+		if (a < b)
+			return a;
+		else
+			return b;
+	}
+	double bigger(double a, double b)
+	{
+		if (a > b)
+			return a;
+		else
+			return b;
+	}
+
 	// Control variables
 	double snapOffset = 2000;
 	double desiredOffset = 500;

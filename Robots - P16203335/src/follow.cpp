@@ -1,43 +1,71 @@
 // follow.cpp
-#include <stdlib.h>
 #include <Aria.h>
 #include <math.h>
 
 #include "follow.h"
+#include "sonar.h"
 follow::follow() : ArAction("Follow line") {}
-
+ 
 ArActionDesired * follow::fire(ArActionDesired d)
 {
 	desiredState.reset(); // Reset the desired state (must be done)
 	deltaHeading = 0;
 	unsigned int cycleTime = myRobot->getCycleTime();
 
+	Sonar leftSonars[4], rightSonars[4];
+	// Get sonar readings
+	//Left sonars
+
+	leftSonars[0].number = 1;		//Top
+	leftSonars[1].number = 0;		//Top-middle
+	leftSonars[2].number = 15;	//Bottom-middle
+	leftSonars[3].number = 14;		//Bottom
+
+	double closestLeft = snapOffset+1, closestRight = snapOffset+1;
+
+	for (int i = 0; i < 4; i++)
+	{
+		leftSonars[i].range = myRobot->getSonarRange(leftSonars[i].number);
+		rightSonars[i].number = i + 6;
+		rightSonars[i].range = myRobot->getSonarRange(i + 6);
+
+		if (leftSonars[i].range <= closestLeft)
+		{
+			closestLeft = leftSonars[i].range;
+		}
+		if (rightSonars[i].range <= closestRight)
+		{
+			closestRight = leftSonars[i].range;
+		}
+	}
+
 	// Get sonar readings
 
 	//Left sonars
-	lTopSonar = myRobot->getSonarRange(1);		//Top
-	lTMidSonar = myRobot->getSonarRange(0);		//Top-middle
-	lBMidSonar = myRobot->getSonarRange(15);	//Bottom-middle
-	lBotSonar = myRobot->getSonarRange(14);		//Bottom
+	//lTopSonar = myRobot->getSonarRange(1);		//Top
+	//lTMidSonar = myRobot->getSonarRange(0);		//Top-middle
+	//lBMidSonar = myRobot->getSonarRange(15);	//Bottom-middle
+	//lBotSonar = myRobot->getSonarRange(14);		//Bottom
 
-	//Right sonars
-	rTopSonar = myRobot->getSonarRange(6);		//Top	
-	rTMidSonar = myRobot->getSonarRange(7);		//Top-middle
-	rBMidSonar = myRobot->getSonarRange(8);		//Bottom-middle
-	rBotSonar = myRobot->getSonarRange(9);		//Bottom
+	////Right sonars
+	//rTopSonar = myRobot->getSonarRange(6);		//Top	
+	//rTMidSonar = myRobot->getSonarRange(7);		//Top-middle
+	//rBMidSonar = myRobot->getSonarRange(8);		//Bottom-middle
+	//rBotSonar = myRobot->getSonarRange(9);		//Bottom
 
-	double closestLeft = min(min(lTopSonar, lTMidSonar), min(lBMidSonar, lBotSonar));	//Returns the closest sonar on the left
+	//double closestLeft = smaller(smaller(lTopSonar, lTMidSonar), smaller(lBMidSonar, lBotSonar));	//Returns the closest sonar on the left
 
-	double closestRight = min(min(rTopSonar, rTMidSonar), min(rBMidSonar, rBotSonar));	//Closest on the right
+	//double closestRight = smaller(smaller(rTopSonar, rTMidSonar), smaller(rBMidSonar, rBotSonar));	//Closest on the right
 
 	// Collision avoidance
-	//frontSonar = myRobot->getClosestSonarRange(-20, 20);	//Gets the closest sonar at the between -20 and 20 (the front)
-	//speed = frontSonar > 750 ? baseSpeed : (unsigned int)(max((frontSonar / 750), 0.25) * baseSpeed);	//If there is something closer than 750mm, then gradually slow to a minimum of 25% baseSpeed
-	//double followProp = frontSonar > 750 ? 1.0 : frontSonar / 750;
+	frontSonar = myRobot->getClosestSonarRange(-20, 20);	//Gets the closest sonar at the between -20 and 20 (the front)
+	speed = frontSonar > 750 ? baseSpeed : (unsigned int)(bigger((frontSonar / 750), 0.25) * baseSpeed);	//If there is something closer than 750mm, then gradually slow to a smallerimum of 25% baseSpeed
+	double followProp = frontSonar > 750 ? 1.0 : frontSonar / 750;
 
 	bool followingRight = closestLeft > closestRight;	//Check if we're following on the right or left
 
-	double closest = followingRight ? min(min(rTopSonar, rTMidSonar), rBMidSonar) : min(min(lTopSonar, lTMidSonar), lBMidSonar);	//Get the closest sonar on the right or left
+	//double closest = followingRight ? smaller(smaller(rTopSonar, rTMidSonar), rBMidSonar) : smaller(smaller(lTopSonar, lTMidSonar), lBMidSonar);	//Get the closest sonar on the right or left
+	double closest = followingRight ? smaller(smaller(rightSonars[0].range, rightSonars[1].range), rightSonars[2].range) : smaller(smaller(leftSonars[0].range, leftSonars[1].range), leftSonars[2].range);
 	/*std::cout << "Line following:" << std::endl;*/
 
 	if (closest > snapOffset)
@@ -56,7 +84,8 @@ ArActionDesired * follow::fire(ArActionDesired d)
 	bool active;
 
 	// Parallel Beam Component
-	double midSonarDelta = followingRight ? rBMidSonar - rTMidSonar : lBMidSonar - lTMidSonar;
+	//double midSonarDelta = followingRight ? rBMidSonar - rTMidSonar : lBMidSonar - lTMidSonar;
+	double midSonarDelta = followingRight ? rightSonars[2].range - rightSonars[1].range : leftSonars[2].range - leftSonars[1].range;
 	angle = (atan2(225.0, midSonarDelta) * 180.0 / M_PI) - 90.0;
 	if (followingRight)
 	{ 
@@ -72,10 +101,15 @@ ArActionDesired * follow::fire(ArActionDesired d)
 	// Wide Beam Component
 	if (followingRight)
 	{
-		double topX = cosForty * rTopSonar;
+		/*double topX = cosForty * rTopSonar;
 		double topY = sinForty * rTopSonar;
 		double botX = cosForty * rBotSonar;
-		double botY = sinForty * rBotSonar;
+		double botY = sinForty * rBotSonar;*/
+
+		double topX = cosForty * rightSonars[0].range;
+		double topY = sinForty * rightSonars[0].range;
+		double botX = cosForty * rightSonars[3].range;
+		double botY = sinForty * rightSonars[3].range;
 
 		double y = topY + botY + 225.0;
 		double x = botX - topX;
@@ -85,10 +119,15 @@ ArActionDesired * follow::fire(ArActionDesired d)
 
 	else
 	{
-		double topX = cosForty * lTopSonar;
+		/*double topX = cosForty * lTopSonar;
 		double topY = sinForty * lTopSonar;
 		double botX = cosForty * lBotSonar;
-		double botY = sinForty * lBotSonar;
+		double botY = sinForty * lBotSonar;*/
+
+		double topX = cosForty * leftSonars[0].range;
+		double topY = sinForty * leftSonars[0].range;
+		double botX = cosForty * leftSonars[3].range;
+		double botY = sinForty * leftSonars[3].range;
 
 		double y = topY + botY + 225.0;
 		double x = botX - topX;
@@ -100,7 +139,7 @@ ArActionDesired * follow::fire(ArActionDesired d)
 	deltaHeading += m_wideComp.update(cycleTime, active, angle);
 
 	// Offset Component
-	double err = max(desiredOffset - closest, -desiredOffset);
+	double err = bigger(desiredOffset - closest, -desiredOffset);
 	angle = err * 0.002 * 50;
 	if (!followingRight)
 	{ 
@@ -108,8 +147,8 @@ ArActionDesired * follow::fire(ArActionDesired d)
 	}
 
 	deltaHeading += m_offsetComp.update(cycleTime, true, angle);
-	/*
-	double turningSpeedFactor = (10.0 - (min(std::abs(deltaHeading), 10.0) * 0.5)) * 0.1;
+	
+	double turningSpeedFactor = (10.0 - (smaller(std::abs(deltaHeading), 10.0) * 0.5)) * 0.1;
 
 	double avoidHeading = (1 - followProp) * 50;
 	if (!followingRight) 
@@ -123,7 +162,7 @@ ArActionDesired * follow::fire(ArActionDesired d)
 	{ 
 		speed = (unsigned int)(baseSpeed * turningSpeedFactor);
 	}
-	*/
+	
 	//std::cout << "Follow Proportion: " << followProp << std::endl;
 	//std::cout << "Turn Speed Factor: " << turningSpeedFactor << std::endl;
 

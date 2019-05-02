@@ -1,16 +1,16 @@
-//#include <SFML/Graphics.hpp>
-
+#pragma once
 #include <ctime>
-#include "map.h"
-#include "sonar.h"
-
-class mapping : public ArAction
+class wander : public ArAction
 {
 public:
-	mapping();
-	virtual ~mapping() {};
+	wander();
+	virtual ~wander() {};
 	virtual ArActionDesired * fire(ArActionDesired d); // Body of the action
 	ArActionDesired desiredState; // Holds state of the robot that we wish to action
 private:
-	std::vector<Sonar> sonars;
+	std::clock_t start = 0;
+	double duration;
+	bool first = true;
+	int timeStep;
+	int baseSpeed = 200;
 };

@@ -4,17 +4,16 @@
 #include <iostream>
 #include <string>
 #include <list>
-
+#include <ctime>
 #include "sonar.h"
 enum dirs
 {
 	UP,
-	RIGHT,
 	LEFT,
+	RIGHT,
 	UP_RIGHT,
 	UP_LEFT,
-	UP_FAR,
-	REVERSE
+	OTHER
 };
 
 class avoid : public ArAction
@@ -27,9 +26,13 @@ public:
 private:
 	int baseSpeed = 200, speed = 150; // Speed in mm/s
 	int DIRECTION;
-	int threshold = 400;
-	int PAST_DIR;
+	int threshold = 300;
 	int count;
 	std::vector<Sonar> sonars;
 	int prioritise(std::vector<Sonar> sonars);
+
+	bool first = true;
+	clock_t upLeftCD, upRightCD, leftCD, rightCD;
+
+	void adjust(int speed, int deltaHead);
 };
